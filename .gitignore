@@ -1,5 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+
+# pycharm
+.idea
+
+# mac
+.DS_Store
+
 *.py[cod]
 *$py.class
 
