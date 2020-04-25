@@ -88,3 +88,21 @@ class GifFrameBuilder(CommonBuilderMixin, AbstractFrameBuilder):
     def back_fix_char(self, frame, char_iter, position_iter, *args, **kwargs):
         """ frame back_fix_char of GifVerify  """
         super().back_fix_char(frame=frame, char_iter=char_iter, position_iter=position_iter, *args, **kwargs)
+
+
+class PngFrameBuilder(CommonBuilderMixin, AbstractFrameBuilder):
+    """ PngVerify frame builder """
+
+    def create_chars(self, angle_iter, string: str, char_filter, *args, **kwargs):
+        """ create characters for frame of PngVerify. """
+        return super().create_chars(angle_iter=angle_iter, string=string, char_filter=char_filter, *args, **kwargs)
+
+    def create_background(self, line_iter: Iterable, back_filter, *args, **kwargs):
+        """ create background layer for PngVerify. """
+        background = super().create_background(line_iter=line_iter, back_filter=back_filter, *args, **kwargs)
+
+        return background
+
+    def back_fix_char(self, frame, char_iter, position_iter, *args, **kwargs):
+        """  """
+        return super().back_fix_char(frame=frame, char_iter=char_iter, position_iter=position_iter, *args, **kwargs)

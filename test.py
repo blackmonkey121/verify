@@ -44,9 +44,20 @@ __author__ = "Monkey"
 # —————————————————————————— verify
 
 
-from verify.core.verify import VerifyGif
+from verify.core.verify import VerifyGif, PngVerify
+
+#
+# gif = VerifyGif()
+# a = gif('Mn3y')
+# a.save_file()
+
+# png = PngVerify()
+# b = png('Png1')
+# b.save_file()
 
 
-gif = VerifyGif()
-a = gif('Mn3y')
-a.save_file()
+def func(n: (int, float)):
+    print(n)
+
+
+func(11.1)

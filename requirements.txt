@@ -2,6 +2,5 @@ itsdangerous==1.1.0
 numpy==1.18.1
 Pillow==7.0.0
 pyasn1==0.4.8
-PyMySQL==0.9.3
 pytz==2019.3
 rsa==4.0

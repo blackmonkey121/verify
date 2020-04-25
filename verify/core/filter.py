@@ -136,13 +136,12 @@ class CommonFilterMixin(object):
     @staticmethod
     def add_char_noise(char):
         """ CHAR_NOISE、CHAR_NOISE_NUMBER Control the size and amount of noise """
-        print('add ok')
 
         img = np.array(char)
 
         x, y, a = img.shape
         present = float(config.CHAR_NOISE_PRESENT)
-        print(present)
+
         # FIXME: should check the config.
 
         row = int(x * present)
@@ -242,4 +241,8 @@ class CommonFilterMixin(object):
 
 
 class GifFilter(CommonFilterMixin, AbstractFilter):
+    """  """
+
+
+class PngFilter(CommonFilterMixin, AbstractFilter):
     """  """
