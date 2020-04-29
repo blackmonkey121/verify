@@ -143,7 +143,7 @@ class VerifyGif(StringMixin, CommonVerify):
         builder = GifFrameBuilder
 
 
-class PngVerify(StringMixin, CommonVerify):
+class VerifyPng(StringMixin, CommonVerify):
     """  """
 
     def create_verify(self, *args, **kwargs):
