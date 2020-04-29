@@ -15,15 +15,15 @@ class AbstractFilter(metaclass=ABCMeta):
     """ Filter Interface """
 
     @abstractmethod
-    def char_filter(self, verify, char: Image.Image, *args, **kwargs):
+    def char_filter(self, char: Image.Image, *args, **kwargs):
         """ filter of char, add some actions to background. """
 
     @abstractmethod
-    def back_filter(self, verify, back: Image.Image, *args, **kwargs):
+    def back_filter(self, back: Image.Image, line_iter, *args, **kwargs):
         """ filter of background, add some actions to background. """
 
     @abstractmethod
-    def frame_filter(self, verify, frame: Image.Image, *args, **kwargs):
+    def frame_filter(self, frame: Image.Image, *args, **kwargs):
         """ filter of frame, add some actions to background. """
 
 
@@ -110,36 +110,40 @@ class Bezier2(object):
             self.lineto(pk[i])
 
 
-class CommonFilterMixin(object):
+class FilterBase(object):
     """ Filter public code block. """
 
-    def char_filter(self, char: Image.Image, *args, **kwargs):
-
-        # Filter public part abstraction.
-        char = self.add_char_noise(char)  # add noise
-        char = self.get_content(char, k=config.CHAR_POINT_NUMBER)  # Cut off extra pixels
-
-        return char
-
-    def back_filter(self, back: Image.Image, line_iter, *args, **kwargs):
-
-        back = self.add_back_noise(back, *args, **kwargs)
-        self.add_back_lines(back, line_iter, *args, **kwargs)  # add noise lines
-        return back
-
-    def frame_filter(self, frame: Image.Image, *args, **kwargs):
+    @staticmethod
+    def deform(img: Image.Image):
         """
-        Reserved method.
-        It will perform some actions after the entire layer is stitched.
+        Deform the picture as a sine function.
+        :param img: Image.Image.
+        :return:Image.Image.
         """
+
+        img = np.array(img)    # transform numpy array.
+        x, y, a = img.shape   # get the size of image.
+
+        deform = int(0.8 * x / config.DEFORM_NUMBER)  # get deform size.
+
+        length = y + deform * config.DEFORM_NUMBER
+
+        images = np.zeros((x, length, a), np.uint8)
+
+        for index, line in enumerate(img):
+            width = int(config.DEFORM_OFFSET * (np.sin(index * np.pi / deform) + 1))
+            images[index] = 255   # fill the background.
+            images[index, width:y + width] = line   # fill the pattern information into the target array.
+
+        return Image.fromarray(np.uint8(images))   # transform np.array to Image.Image.
 
     @staticmethod
-    def add_char_noise(char):
-        """ CHAR_NOISE、CHAR_NOISE_NUMBER Control the size and amount of noise """
+    def cut_off_char(char):
+        """ CHAR_NOISE、CHAR_NOISE_NUMBER control the size and amount of cut off elements. """
 
         img = np.array(char)
 
-        x, y, a = img.shape
+        x, y = img.shape[:2]
         present = float(config.CHAR_NOISE_PRESENT)
 
         # FIXME: should check the config.
@@ -218,7 +222,8 @@ class CommonFilterMixin(object):
 
         return img
 
-    def add_back_noise(self, back, *args, **kwargs):
+    @staticmethod
+    def add_back_noise(back, *args, **kwargs):
         """ Add background noise to enhance the difficulty of machine recognition. """
 
         frame = np.array(back)
@@ -231,18 +236,60 @@ class CommonFilterMixin(object):
             frame[x:x + random.randint(1, NOISE_TYPE), y:y + random.randint(1, NOISE_TYPE), :] = config.CHAR_COLOR
         return Image.fromarray(np.uint8(frame))
 
-    def add_back_lines(self, back, line_iter, *args, **kwargs):
+    @staticmethod
+    def add_back_lines(back, line_iter, *args, **kwargs):
         """ Add background noise lines to enhance the difficulty of machine recognition."""
         for line in line_iter:
             draw = ImageDraw.Draw(back)
             tmp = Bezier2(draw, line, 1, (0, 0, 0, 255))
             tmp.render()
             del draw
+        return back
+
+    @staticmethod
+    def add_back_circle(back):
+        """ Add background circle lines to enhance the difficulty of machine recognition."""
 
 
-class GifFilter(CommonFilterMixin, AbstractFilter):
-    """  """
+class GifFilter(FilterBase, AbstractFilter,):
+    """ GifVerify filter. """
+
+    def char_filter(self, char: Image.Image, *args, **kwargs):
+        """
+        It will be called after generating the character picture.
+        Cut off some pixel block of char,deform the char picture,
+        add some noise and cut off full pixel.
+        """
+        char = self.cut_off_char(char=char)
+        char = self.deform(img=char)
+        return self.get_content(char, k=config.CHAR_POINT_NUMBER)
+
+    def back_filter(self, back: Image.Image, line_iter, *args, **kwargs):
+        """
+        It will be called after generating the background layer.
+        Add some noise and lines to background.
+        """
+        back = self.add_back_noise(back, *args, **kwargs)
+        return self.add_back_lines(back, line_iter, *args, **kwargs)  # add noise lines
+
+    def frame_filter(self, frame: Image.Image, *args, **kwargs):
+        """  """
 
 
-class PngFilter(CommonFilterMixin, AbstractFilter):
-    """  """
+class PngFilter(FilterBase, AbstractFilter):
+    """ PngVerify filter. """
+
+    def char_filter(self, char: Image.Image, *args, **kwargs):
+        """
+        It will be called after generating the character picture.
+        Deform the char picture, add some noise, cut off full pixel.
+        """
+        char = self.deform(img=char)
+        return self.get_content(char, k=config.CHAR_POINT_NUMBER)
+
+    def back_filter(self, back: Image.Image, line_iter, *args, **kwargs):
+        """ Add some lines for background. """
+        return self.add_back_noise(back, *args, **kwargs)
+
+    def frame_filter(self, frame: Image.Image, *args, **kwargs):
+        """ """
