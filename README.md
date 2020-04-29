@@ -1,5 +1,5 @@
 <div align=center>
-    <img src="verify_logo.png" alt="">
+    <img src="image/verify_logo.png" alt="">
 </div>. 
 # Verify ![](https://img.shields.io/badge/license-GNU%203.9-brightgreen)  ![](https://img.shields.io/badge/version-0.1-informational)  ![](https://img.shields.io/badge/python-3.x-blueviolet)
 一个优雅的验证码生成框架。
