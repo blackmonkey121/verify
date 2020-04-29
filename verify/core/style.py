@@ -37,8 +37,8 @@ class StyleCommonMixin(object):
 
         x, y = config.VERIFY_SIZE
         char_x, char_y = config.VERIFY_CODE_SIZE
-        site_y = (y - char_y) // 2  # coordinate
-        sep = x // config.VERIFY_CODE_NUMBER  # step length
+        site_y = (y - char_y) // 6  # coordinate
+        sep = int(x * 0.9 // config.VERIFY_CODE_NUMBER)  # step length
 
         for index in range(config.VERIFY_CODE_NUMBER):
             site = (sep * index, site_y)  # Trajectory center

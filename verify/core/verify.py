@@ -74,16 +74,6 @@ class CommonVerify(object):
 
         return self._meta.storage(instance=verify, string=self.string, *args, **kwargs)
 
-    class _meta:
-        filter = None
-        style = None
-        storage = None
-        builder = None
-
-
-class VerifyGif(StringMixin, CommonVerify):
-    """ """
-
     def create_frame(self, style_data, *args, **kwargs):
 
         builder = self._meta.builder or kwargs.get('builder', None)
@@ -93,10 +83,10 @@ class VerifyGif(StringMixin, CommonVerify):
 
         builder = builder()
 
-        line_iter = style_data['style']['line']
+        self.line_iter = style_data['style']['line']
 
         # Get frame background.
-        frame = builder.create_background(line_iter=line_iter, back_filter=self.filter.back_filter, *args, **kwargs)
+        self.frame = builder.create_background(back_filter=self.filter.back_filter, *args, **kwargs)
 
         # Get a background characters rotate angle iterator.
         angle_iter: Iterable = style_data['style']['char']['angle']
@@ -109,13 +99,23 @@ class VerifyGif(StringMixin, CommonVerify):
         position_iter: Iterable = style_data['style']['char']['position']
 
         # Fix the char on the background
-        builder.back_fix_char(frame=frame, char_iter=char_iter, position_iter=position_iter,
+        builder.back_fix_char(frame=self.frame, char_iter=char_iter, position_iter=position_iter,
                               char_filter=self.filter.back_filter)
 
         # Add filters for new frame.
-        self.filter.frame_filter(frame)
+        self.filter.frame_filter(verify=self)
 
-        return frame
+        return self.frame
+
+    class _meta:
+        filter = None
+        style = None
+        storage = None
+        builder = None
+
+
+class VerifyGif(StringMixin, CommonVerify):
+    """ """
 
     def create_verify(self, *args, **kwargs):
 
@@ -124,9 +124,9 @@ class VerifyGif(StringMixin, CommonVerify):
         frame_style = self.style.frame_style()
 
         for frame_index in range(config.FRAME_NUMBER):
-            style = frame_style.__next__()
+
             style_data = {
-                'style': style,
+                'style': frame_style.__next__(),
                 'string': self.string,
             }
 
@@ -135,7 +135,6 @@ class VerifyGif(StringMixin, CommonVerify):
             frames.append(frame)
 
         return frames
-
 
     class _meta:
         filter = GifFilter
@@ -146,39 +145,6 @@ class VerifyGif(StringMixin, CommonVerify):
 
 class PngVerify(StringMixin, CommonVerify):
     """  """
-
-    def create_frame(self, style_data, builder=PngFrameBuilder, *args, **kwargs):
-
-        builder = builder or kwargs.get('builder', None)
-
-        if not issubclass(builder, PngFrameBuilder):
-            raise ('%s must be a subclass of `PngFrameBuilder`.' % builder)
-
-        builder = builder()   # get the builder instance.
-
-        line_iter = style_data['style']['line']    # Noise lines style data :Type Iterable.
-
-        # Get frame background.
-        frame = builder.create_background(line_iter=line_iter, back_filter=self.filter.back_filter, *args, **kwargs)
-
-        # Get a background characters rotate angle iterator.
-        angle_iter: Iterable = style_data['style']['char']['angle']
-
-        # Create a background character iterator.
-        char_iter: Iterable = builder.create_chars(angle_iter=angle_iter, string=self.string, char_filter=self.filter.char_filter)
-
-        # Get a background character position iterator.
-        position_iter: Iterable = style_data['style']['char']['position']
-
-        # Fix the char on the background
-        builder.back_fix_char(frame=frame, char_iter=char_iter, position_iter=position_iter, char_filter=self.filter.back_filter)
-
-        # Add filters for new frame.
-        self.filter.frame_filter(frame)
-
-        return frame
-
-        # Fixme Add others.
 
     def create_verify(self, *args, **kwargs):
         """ Jpeg verify builder in the project . """

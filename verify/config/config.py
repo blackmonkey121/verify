@@ -62,20 +62,18 @@ BACK_NOISE_NUMBER = 200
 # Noise size
 BACK_NOISE_TYPE = 2
 # Noise lines number
-LINES_NUMBER = 0
+LINES_NUMBER = 4
 
 # CHAR NOISE CONFIG
-CHAR_NOISE_NUMBER: int = 4
+CHAR_CUT_NUMBER: int = 8
 # char noise present
-CHAR_NOISE_PRESENT: float = 0.25
-# the color point of the character itself, bigger it is, the clearer the characters
-CHAR_POINT_NUMBER = 20
+CHAR_CUT_PRESENT: float = 0.2
+
+
+CIRCLE_NUMBER = 6
 
 # GIF
 FRAME_NUMBER = 30
-
-# JPG/JPEG
-
 
 # control
 TRACK_INTERVAL = 10
