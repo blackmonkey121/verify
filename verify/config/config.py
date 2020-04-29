@@ -55,14 +55,14 @@ NULL_COLOR = (0, 0, 0, 0)
 
 # BACKGROUND CONFIG
 # verify size
-VERIFY_SIZE = (200, 60)
+VERIFY_SIZE = (180, 60)
 
 # NOISE CONFIG
 BACK_NOISE_NUMBER = 200
 # Noise size
 BACK_NOISE_TYPE = 2
 # Noise lines number
-LINES_NUMBER = 6
+LINES_NUMBER = 0
 
 # CHAR NOISE CONFIG
 CHAR_NOISE_NUMBER: int = 4
@@ -97,7 +97,7 @@ SECRET_KEY = 'a-=3bb51t_x#wza&jh3uz#kgym_yx^!#==l(js4_=w^40xj#7g'
 STORAGE_DIR = '/Users/ms/Desktop/Gif'
 
 DEFORM_NUMBER = 2
-DEFORM_OFFSET = 4
+DEFORM_OFFSET = 6
 # DATABASE = {
 #
 # }

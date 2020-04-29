@@ -36,7 +36,8 @@ class StyleCommonMixin(object):
         """ Generate initial data for the coordinates of a frame of characters in the background. """
 
         x, y = config.VERIFY_SIZE
-        site_y = y // 3  # coordinate
+        char_x, char_y = config.VERIFY_CODE_SIZE
+        site_y = (y - char_y) // 2  # coordinate
         sep = x // config.VERIFY_CODE_NUMBER  # step length
 
         for index in range(config.VERIFY_CODE_NUMBER):
