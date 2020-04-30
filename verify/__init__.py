@@ -12,7 +12,7 @@ from .core.safe import Safe
 from .core.cache import cache, Cache
 
 __all__ = [
-    "Config", "config",
+    "Config",
     "VerifyPng", "VerifyGif", "CommonVerify",
     "PngFrameBuilder", "GifFrameBuilder",
     "PngFilter", "GifFilter", "FilterBase",

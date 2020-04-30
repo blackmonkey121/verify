@@ -18,6 +18,16 @@ class ConfigNotExist(Error):
                "Lowercase variables are not collected by config.)" % self.key
 
 
+class ConfigFileNotFoundError(Error):
+    """ Config file not found . """
+
+    def __init__(self, fname):
+        self.fname = fname
+
+    def __str__(self):
+        return "(The `%s.py` file not found in your project.)" % self.fname
+
+
 class SubclassError(Error):
     """ Subclass constraint error. """
 
