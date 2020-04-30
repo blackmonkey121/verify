@@ -112,10 +112,7 @@ class StorageCommonMixin(object):
 
     def save_db(self) -> bool:
         """ Save format binary verify object to MySQL. """
-        os.system('mkdir name')
-        f = open('name/test.py', 'w')
-        f.write('hah')
-        f.close()
+
         return False
         # create_table_sql = """
         #  CREATE TABLE {} (
