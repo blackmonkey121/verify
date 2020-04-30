@@ -1,4 +1,3 @@
-#!usr/bin/env python3
-# -*- coding: utf-8 -*-
-__author__ = "Monkey"
-
+#!/usr/bin/env python3
+# _*_ coding: utf-8 _*_
+__author__ = "monkey"
