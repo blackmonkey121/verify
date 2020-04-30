@@ -34,7 +34,7 @@ class AbstractCache(metaclass=ABCMeta):
         """  """
 
     @abstractmethod
-    def clear(self):
+    def _clear(self):
         """  """
 
 
@@ -65,14 +65,14 @@ class Cache(object):
         self._expire_records[k] = current + self.expiration
         self._visit_records[k] = current
 
-        self.clear()
+        self._clear()
 
     def __getitem__(self, k):
 
         current = self.__cur()
         del self._visit_records[k]
         self._visit_records[k] = current
-        self.clear()
+        self._clear()
         with my_lock():
             ret = self._cache[k]
 
@@ -80,7 +80,7 @@ class Cache(object):
 
     def __contains__(self, k):
 
-        self.clear()
+        self._clear()
         return k in self._cache
 
     def __delete__(self, k):
@@ -89,8 +89,8 @@ class Cache(object):
             del self._expire_records[k]
             del self._visit_records[k]
 
-    def clear(self):
-        """ achieve clear method """
+    def _clear(self):
+        """ achieve _clear method """
         if self.expiration is None:
             return None
         delete_key = []
@@ -118,6 +118,11 @@ class Cache(object):
     def set(self, k, v):
         """ achieve set method """
         self.__setitem__(k, v)
+
+    def clear(self):
+        self._cache.clear()
+        self._visit_records.clear()
+        self._expire_records.clear()
 
 
 cache = Cache(contain=1024, expiration=60 * 60)    # default timeout : one hour
