@@ -77,7 +77,7 @@ class SafeEngineError(Error):
         self.safe = safe
 
     def __str__(self):
-        return '`%s` is not existed!' % self.safe
+        return '`%s` SafeEngine is not existed!' % self.safe.upper()
 
 
 class StringError(Error):

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 __author__ = "Monkey"
 
-
 import rsa
 import json
 import base64
@@ -78,21 +77,30 @@ class RsaEngine(SafeEngine):
 
         self.cache = cache
 
-        if not all((pub_path, priv_path)):    # get the keys filename <*.pem>
+        if not all((pub_path, priv_path)):  # get the keys filename <*.pem>
             pub_path = 'public_key.pem'
             priv_path = 'private_key.pem'
 
         from os import path, mkdir
-        folder = config.RSA_KEY_DIR    # Get the storage address of the key
-        self.public_key_path = path.join(folder, pub_path)   # Splice key address and file name
+        folder = config.RSA_KEY_DIR  # Get the storage address of the key
+        self.public_key_path = path.join(folder, pub_path)  # Splice key address and file name
         self.private_key_path = path.join(folder, priv_path)
 
-        if not path.isdir(folder):   # Check if this address exists
-            mkdir(folder)   # Make the dir if it is not existed.
+        if not path.isdir(folder):  # Check if this address exists
+            mkdir(folder)  # Make the dir if it is not existed.
             self.update_key(number)
 
         elif not all((path.isfile(self.public_key_path), path.isfile(self.private_key_path))):
             self.update_key(number)
+
+        else:
+            pub = open(self.public_key_path, 'rb')
+            self.pub = pub.read()
+            pub.close()
+
+            pri = open(self.private_key_path, 'rb')
+            self.pri = pri.read()
+            pri.close()
 
     def update_key(self, number):
         """ Update or Create key """
@@ -120,7 +128,6 @@ class RsaEngine(SafeEngine):
         pub = cache.get('pub_key', None)
         if not pub:
             with open(self.public_key_path, mode='rb') as f:
-
                 pub = f.read()
 
         public_key = rsa.PublicKey.load_pkcs1(pub)
@@ -150,25 +157,25 @@ class RsaEngine(SafeEngine):
         return info
 
     def get_key(self):
-        return {'pub':self.pub, 'pri':self.pri}
+        return {'pub': self.pub, 'pri': self.pri}
 
 
 class FastEngine(SafeEngine):
     """ Example based on improved AES encryption algorithm """
+
     def __init__(self, timeout):
         self.secret_key = config.SECRET_KEY
         self.timeout = timeout
-        self.fast_instance = itsdangerous.TimedJSONWebSignatureSerializer(secret_key=self.secret_key, expires_in=self.timeout)
+        self.fast_instance = itsdangerous.TimedJSONWebSignatureSerializer(secret_key=self.secret_key,
+                                                                          expires_in=self.timeout)
 
     def encrypt(self, info: str) -> bytes:
-
         ret = {'str': info}
         res = self.fast_instance.dumps(ret)
         token = res.decode('utf8')  # code method.
         return token
 
     def decrypt(self, info_encrypted: bytes) -> str:
-
         res = self.fast_instance.loads(info_encrypted)
         return res['str']
 
@@ -191,13 +198,13 @@ class Safe(StringMixin, AbstractSafe):
 
     @staticmethod
     def _to_safe_string(obj):
-        obj = base64.urlsafe_b64encode(obj.encode("ISO-8859-1"))   # bytes
+        obj = base64.urlsafe_b64encode(obj.encode("ISO-8859-1"))  # bytes
         return obj.decode("ISO-8859-1")  # str
 
     @staticmethod
     def _to_safe_bytes(obj):
         obj = obj.encode('ISO-8859-1')  # str
-        return base64.urlsafe_b64decode(obj).decode("ISO-8859-1")   # byte
+        return base64.urlsafe_b64decode(obj).decode("ISO-8859-1")  # byte
 
     def coding(self, string=None, method='RSA', verify_type='gif'):
         """
@@ -220,8 +227,8 @@ class Safe(StringMixin, AbstractSafe):
 
         src = json.dumps({
             'str': safe_instance.encrypt(string),  # encrypted string
-            'mtd': method,          # encryption method
-            'vt': verify_type,     # Verification code type
+            'mtd': method,  # encryption method
+            'vt': verify_type,  # Verification code type
         })
         return self._to_safe_string(json.dumps(src))
 
@@ -259,7 +266,7 @@ class Safe(StringMixin, AbstractSafe):
     def tell_key(self, method):
         """ """
 
-        safe_instance = getattr(self, '_%s' % method, None)
+        safe_instance = getattr(self, '_%s' % method.lower(), None)
         if safe_instance:
             return safe_instance.get_key()
         else:
