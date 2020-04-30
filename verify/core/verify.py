@@ -27,7 +27,7 @@ class StringMixin(object):
 
 class CommonVerify(object):
 
-    def __init__(self, config=None, filter=None, style=None, storage=None, *args, **kwargs):
+    def __init__(self, config = None, filter=None, style=None, storage=None, *args, **kwargs):
         """
         Commander of GifVerify, it not be instanced.
         :param config: The config will have a higher priority than settings.

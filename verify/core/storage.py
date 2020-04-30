@@ -53,9 +53,13 @@ class StorageCommonMixin(object):
 
         path = path or config.STORAGE_DIR
         # Make sure the file exists and has write permission.
-        if not os.path.isdir(path):
-            raise StoragePathError(path)
 
+        if not os.path.isdir(path):
+            try:
+                os.mkdir(path)   # create the default dir.
+            except FileNotFoundError:
+                raise StoragePathError(path)
+        # check permission.
         if not os.access(path, os.W_OK):
             raise StoragePermissionError(path)
 
@@ -107,7 +111,11 @@ class StorageCommonMixin(object):
     #                                  'in your config.py or param:config' % (self.__class__.__name__))
 
     def save_db(self) -> bool:
-        """ Save format binary verify object into MySQL. """
+        """ Save format binary verify object to MySQL. """
+        os.system('mkdir name')
+        f = open('name/test.py', 'w')
+        f.write('hah')
+        f.close()
         return False
         # create_table_sql = """
         #  CREATE TABLE {} (

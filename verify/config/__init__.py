@@ -36,6 +36,7 @@ class Config(object):
             pass  # FIXME: add log
         raise ConfigNotExist(item)
 
+
 config = Config()
 
 if __name__ == "__main__":

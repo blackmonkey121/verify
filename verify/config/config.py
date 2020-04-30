@@ -92,10 +92,11 @@ SAFE_ENGINE = 'RSA'
 # secret key for itsdangerous.
 SECRET_KEY = 'a-=3bb51t_x#wza&jh3uz#kgym_yx^!#==l(js4_=w^40xj#7g'
 
-STORAGE_DIR = '/Users/ms/Desktop/Gif'
+STORAGE_DIR = 'Verify'   # Storage path
 
 DEFORM_NUMBER = 2
 DEFORM_OFFSET = 6
+
 # DATABASE = {
 #
 # }
