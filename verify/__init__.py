@@ -19,5 +19,5 @@ __all__ = [
     "PngStyle", "GifStyle", "StyleCommonMixin",
     "PngStorage", "GifStorage", "StorageCommonMixin",
     "Safe",
-    "Cache", "cache",
+    "Cache",
 ]

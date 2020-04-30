@@ -56,6 +56,10 @@ class StorageError(SubclassError):
     cls = 'Storage'
 
 
+class BuilderError(SubclassError):
+    cls = 'Builder'
+
+
 class StoragePathError(Error):
     """ storage path is not exist error. """
 

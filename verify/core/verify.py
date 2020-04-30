@@ -7,7 +7,7 @@ import random
 
 from .storage import GifStorage, PngStorage
 from ..config import Config
-from ..core.errors import ConfigError, FilterError, StyleError, StorageError
+from ..core.errors import ConfigError, FilterError, StyleError, StorageError, BuilderError
 from ..core.filter import GifFilter, PngFilter
 from ..core.style import GifStyle, PngStyle
 from ..core.builder import GifFrameBuilder, PngFrameBuilder
@@ -27,7 +27,7 @@ class StringMixin(object):
 
 class CommonVerify(object):
 
-    def __init__(self, config = None, filter=None, style=None, storage=None, *args, **kwargs):
+    def __init__(self, config = None, filter=None, style=None, storage=None, builder=None, *args, **kwargs):
         """
         Commander of GifVerify, it not be instanced.
         :param config: The config will have a higher priority than settings.
@@ -64,6 +64,13 @@ class CommonVerify(object):
         else:
             raise StorageError(storage)
 
+        builder = builder or self._meta.builder
+
+        if issubclass(builder, self._meta.builder):
+            self.builder = builder()
+        else:
+            raise BuilderError(builder)
+
     def __call__(self, string=None, *args, **kwargs):
 
         self.string = string or self.create_string()
@@ -76,30 +83,23 @@ class CommonVerify(object):
 
     def create_frame(self, style_data, *args, **kwargs):
 
-        builder = self._meta.builder or kwargs.get('builder', None)
-
-        if not issubclass(builder, self._meta.builder):
-            raise ('%s must be a subclass of `%s`.' % (builder, self._meta.builder.__class__.__name__))
-
-        builder = builder()
-
         self.line_iter = style_data['style']['line']
 
         # Get frame background.
-        self.frame = builder.create_background(back_filter=self.filter.back_filter, *args, **kwargs)
+        self.frame = self.builder.create_background(back_filter=self.filter.back_filter, *args, **kwargs)
 
         # Get a background characters rotate angle iterator.
         angle_iter: Iterable = style_data['style']['char']['angle']
 
         # Create a background character iterator.
-        char_iter: Iterable = builder.create_chars(angle_iter=angle_iter, string=self.string,
+        char_iter: Iterable = self.builder.create_chars(angle_iter=angle_iter, string=self.string,
                                                    char_filter=self.filter.char_filter)
 
         # Get a background character position iterator.
         position_iter: Iterable = style_data['style']['char']['position']
 
         # Fix the char on the background
-        builder.back_fix_char(frame=self.frame, char_iter=char_iter, position_iter=position_iter,
+        self.builder.back_fix_char(frame=self.frame, char_iter=char_iter, position_iter=position_iter,
                               char_filter=self.filter.back_filter)
 
         # Add filters for new frame.
