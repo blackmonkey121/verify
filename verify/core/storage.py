@@ -25,10 +25,6 @@ class AbstractStorage(metaclass=ABCMeta):
         """ save verify to file system. """
 
     @abstractmethod
-    def save_db(self) -> bool:
-        """ save verify to database. """
-
-    @abstractmethod
     def get_binary(self) -> bytes:
         """ Get the binary type verify. """
 
@@ -93,50 +89,7 @@ class StorageCommonMixin(object):
         """ Get the verify format binary. """
 
         img_bytes = self.instance.read()
-
         return img_bytes  # binary object of verify.
-
-    # def get_db_connection(self):
-    #     """ Get database connection. """
-    # db_dict = config.DATABASE
-    # if db_dict:
-    #     try:
-    #         conn = connect(**db_dict)
-    #     except Exception as e:
-    #         raise DataBaseConfigError('Your `config.DATABASE` have some error(s).')
-    #     return conn.cursor()
-    #
-    # else:
-    #     raise DataBaseNotConfigError('If you use %s.save_db() method, you must config `DATABASE` \n'
-    #                                  'in your config.py or param:config' % (self.__class__.__name__))
-
-    def save_db(self) -> bool:
-        """ Save format binary verify object to MySQL. """
-
-        return False
-        # create_table_sql = """
-        #  CREATE TABLE {} (
-        #  id INT auto_increment PRIMARY KEY ,
-        #  verify_code CHAR(10) NOT NULL UNIQUE,
-        #  context BINARY NOT NULL,
-        #  )ENGINE=innodb;
-        #  """.format(self._meta.table_name)
-        #
-        # create_record_sql = """
-        #  INSERT INTO {}(VERIFY_CODE,CONTEXT)
-        # VALUES ('%s', '%s')"
-        #  """ .format(self._meta.table_name)
-        #
-        # cursor = self.get_db_connection()
-        #
-        # try:
-        #     cursor.execute(create_record_sql, (self.string, self.instance))
-        # except Exception as e:
-        #     print(e)
-        #     try:
-        #         cursor.execute(create_table_sql)
-        #     except Exception as e_msg:
-        #         print(e_msg)
 
 
 class GifStorage(StorageCommonMixin, AbstractStorage):
