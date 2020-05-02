@@ -3,9 +3,11 @@
 __author__ = "monkey"
 
 from typing import Iterable
+from PIL import Image
 import random
 
-from .storage import GifStorage, PngStorage
+
+from .storage import GifStorage, PngStorage, AbstractStorage
 from ..config import Config
 from ..core.errors import ConfigError, FilterError, StyleError, StorageError, BuilderError
 from ..core.filter import GifFilter, PngFilter
@@ -18,7 +20,7 @@ class StringMixin(object):
     """ A mixin for subclass add a random strings method. """
 
     @staticmethod
-    def create_string():
+    def create_string() -> str:
         """  """
         char_list = random.choices(config.VERIFY_CODE_SET, k=config.VERIFY_CODE_NUMBER)
         string = ''.join(char_list)
@@ -27,7 +29,7 @@ class StringMixin(object):
 
 class CommonVerify(object):
 
-    def __init__(self, config = None, filter=None, style=None, storage=None, builder=None, *args, **kwargs):
+    def __init__(self, config = None, filter=None, style=None, storage=None, builder=None, *args, **kwargs) -> None:
         """
         Commander of GifVerify, it not be instanced.
         :param config: The config will have a higher priority than settings.
@@ -42,7 +44,7 @@ class CommonVerify(object):
 
         config = config or Config
         if issubclass(config, Config):
-            self.config = config()
+            self.config = config(**kwargs)
         else:
             raise ConfigError(config)
 
@@ -71,7 +73,7 @@ class CommonVerify(object):
         else:
             raise BuilderError(builder)
 
-    def __call__(self, string=None, *args, **kwargs):
+    def __call__(self, string=None, *args, **kwargs) -> AbstractStorage:
 
         self.string = string or self.create_string()
 
@@ -79,9 +81,9 @@ class CommonVerify(object):
 
         verify = self.create_verify(*args, **kwargs)
 
-        return self._meta.storage(instance=verify, string=self.string, *args, **kwargs)
+        return self.storage(instance=verify, string=self.string, *args, **kwargs)
 
-    def create_frame(self, style_data, *args, **kwargs):
+    def create_frame(self, style_data: dict, *args, **kwargs) -> 'Image.Image':
 
         self.line_iter = style_data['style']['line']
 
@@ -103,9 +105,7 @@ class CommonVerify(object):
                               char_filter=self.filter.back_filter)
 
         # Add filters for new frame.
-        self.filter.frame_filter(verify=self)
-
-        return self.frame
+        return self.filter.frame_filter(verify=self)
 
     class _meta:
         filter = None
@@ -115,9 +115,9 @@ class CommonVerify(object):
 
 
 class VerifyGif(StringMixin, CommonVerify):
-    """ """
+    """ Gif verification interface. """
 
-    def create_verify(self, *args, **kwargs):
+    def create_verify(self, *args, **kwargs) -> list:
 
         frames = []
 
@@ -144,10 +144,10 @@ class VerifyGif(StringMixin, CommonVerify):
 
 
 class VerifyPng(StringMixin, CommonVerify):
-    """  """
+    """ Png verification interface """
 
-    def create_verify(self, *args, **kwargs):
-        """ Jpeg verify builder in the project . """
+    def create_verify(self, *args, **kwargs) -> 'Image.Image':
+        """ Png verify builder in the project . """
 
         frame_style = self.style.frame_style()
         style_data = {

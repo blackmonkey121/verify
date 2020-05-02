@@ -4,118 +4,48 @@ __author__ = "Monkey"
 
 import random
 from abc import ABCMeta, abstractmethod
-from math import sqrt
+from typing import Iterable
 
-from PIL import Image, ImageDraw
+from PIL import Image
 from ..config import config
 import numpy as np
 import cv2 as cv
+
+# FIXME: `PIL.Image.Image` and `np.ndarray` question will eliminate the dependence on PIL and solve.
 
 
 class AbstractFilter(metaclass=ABCMeta):
     """ Filter Interface """
 
     @abstractmethod
-    def char_filter(self, verify, char: Image.Image, *args, **kwargs):
+    def char_filter(self, verify: object, char: 'Image.Image', *args, **kwargs) -> 'Image.Image':
         """ filter of char, add some actions to background. """
 
     @abstractmethod
-    def back_filter(self, verify, back: Image.Image, *args, **kwargs):
+    def back_filter(self, verify: object, back: 'Image.Image', *args, **kwargs) -> 'Image.Image':
         """ filter of background, add some actions to background. """
 
     @abstractmethod
-    def frame_filter(self, verify, frame: Image.Image, line_iter, *args, **kwargs):
+    def frame_filter(self, verify: object, *args, **kwargs) -> 'Image.Image':
         """ filter of frame, add some actions to background. """
-
-
-class Bezier2(object):
-    """
-    Draw interference lines.
-    """
-
-    def __init__(self, draw, points, line_width, line_color):
-        """
-        :param draw: layer bound objects.
-        :param points: points data ((x1,y1), (x2,y2), (x3,y3))
-        :param line_width: line bind
-        :param line_color: line color
-        """
-        self.draw = draw
-        self.points = points
-        self.line_width = line_width
-        self.line_color = line_color
-        self.current_point = (0, 0)
-
-    def moveto(self, p):
-        self.current_point = p
-
-    def lineto(self, p):
-        self.draw.line((self.current_point, p), width=self.line_width, fill=self.line_color)
-        self.current_point = p
-
-    def render(self):
-        NO = 3
-        KT = 5
-        m = NO - 1
-        p = {}  # p[3][2]
-        for i in range(0, NO, 2):
-            p[i] = self.points[i]
-
-        l1 = 1.0 * (self.points[0][0] - self.points[1][0])
-        ll = 1.0 * (self.points[0][1] - self.points[1][1])
-        l1 = sqrt(l1 * l1 + ll * ll)
-
-        l2 = 1.0 * (self.points[2][0] - self.points[1][0])
-        ll = 1.0 * (self.points[2][1] - self.points[1][1])
-        l2 = sqrt(l2 * l2 + ll * ll)
-
-        p[1] = (
-            ((l1 + l2) * (l1 + l2) * self.points[1][0] - l2 * l2 * self.points[0][0] - l1 * l1 * self.points[2][0]) / (
-                    2 * l1 * l2),
-            ((l1 + l2) * (l1 + l2) * self.points[1][1] - l2 * l2 * self.points[0][1] - l1 * l1 * self.points[2][1]) / (
-                    2 * l1 * l2)
-        )
-        '''
-        # Draw a tangent
-        self.moveto(p[0])
-        for i in range(1, m+1):
-            self.lineto(p[i])
-        '''
-
-        pk = {}  # pk[129][2]
-        for i in range(m + 1):
-            pk[i] = p[i]
-
-        pt = {}  # pt[129][2]
-        for k in range(KT + 1):
-            for i in range(0, m + 1, 2):
-                pt[2 * i] = pk[i]
-            for i in range(m):
-                pt[2 * i + 1] = (
-                    int(pk[i][0] + pk[i + 1][0]) >> 1,
-                    int(pk[i][1] + pk[i + 1][1]) >> 1
-                )
-            for i in range(1, m):
-                pt[2 * i] = (
-                    int(pt[2 * i - 1][0] + pt[2 * i + 1][0]) >> 1,
-                    int(pt[2 * i - 1][1] + pt[2 * i + 1][1]) >> 1
-                )
-            for i in range(2 * m + 1):
-                pk[i] = pt[i]
-
-            if k == KT:
-                break
-            m <<= 1
-        self.moveto(pk[0])
-        for i in range(1, 2 * m + 1):
-            self.lineto(pk[i])
 
 
 class FilterBase(object):
     """ Filter public code block. """
 
     @staticmethod
-    def deform(img: np.ndarray):
+    def write_line(img: 'np.ndarray', points: tuple) -> None:
+        """ writer lines for img. """
+        length = len(points)
+        index = 0
+
+        while index < length - 1:
+            cv.line(img=img, pt1=points[index], pt2=points[index+1],
+                    color=config.CHAR_COLOR, thickness=1, )
+            index += 1
+
+    @staticmethod
+    def deform(img: 'np.ndarray') -> 'np.ndarray':
         """
         Deform the picture as a sine function.
         :param img: np.ndarray.
@@ -137,7 +67,7 @@ class FilterBase(object):
         return images
 
     @staticmethod
-    def cut_off_char(img):
+    def cut_off_char(img: 'np.ndarray') -> 'np.ndarray':
         """ CHAR_CUT、CHAR_CUT_NUMBER control the size and amount of cut off elements. """
 
         x, y = img.shape[:2]
@@ -156,11 +86,11 @@ class FilterBase(object):
         return img
 
     @staticmethod
-    def get_content(img):
+    def get_content(img: 'np.ndarray') -> 'np.ndarray':
         """
         Find the character boundary by iterating from the two ends of the row and column to the middle
         to cut out the smallest character pattern.
-        :param char: Original character picture object.
+        :param img: Original character picture object.
         :return: Picture objects that contain only character parts.
         """
         # TODO: should try this code block!!! No Q/A:
@@ -195,32 +125,28 @@ class FilterBase(object):
         return img
 
     @staticmethod
-    def add_noise(img, *args, **kwargs):
+    def add_noise(img: 'np.ndarray', *args, **kwargs) -> 'np.ndarray':
         """ Add background noise to enhance the difficulty of machine recognition. """
 
-        frame = np.array(img)
-        rows, cols, z = frame.shape
+        rows, cols, z = img.shape
         noise_type = kwargs.get('noise_type', None) or config.BACK_NOISE_TYPE  # Noise type
         noise_number = kwargs.get('noise_number', None) or config.BACK_NOISE_NUMBER
 
         for i in range(noise_number):
             x = np.random.randint(0, rows)
             y = np.random.randint(0, cols)
-            frame[x:x + random.randint(1, noise_type), y:y + random.randint(1, noise_type), :] = config.CHAR_COLOR
-        return Image.fromarray(np.uint8(frame))
+            img[x:x + random.randint(1, noise_type), y:y + random.randint(1, noise_type), :] = config.CHAR_COLOR
+        return img
 
-    @staticmethod
-    def add_lines(img, line_iter, *args, **kwargs):
+    def add_lines(self, img: 'np.ndarray', line_iter: 'Iterable', *args, **kwargs) -> 'np.ndarray':
         """ Add background noise lines to enhance the difficulty of machine recognition."""
+
         for line in line_iter:
-            draw = ImageDraw.Draw(img)
-            tmp = Bezier2(draw, line, 1, (0, 0, 0, 255))
-            tmp.render()
-            del draw
+            self.write_line(img=img, points=line)
         return img
 
     @staticmethod
-    def add_circle(img):
+    def add_circle(img: 'np.ndarray') -> 'np.ndarray':
         """ Add background circle lines to enhance the difficulty of machine recognition."""
         x, y, a = img.shape
 
@@ -236,7 +162,7 @@ class FilterBase(object):
         return img
 
     @staticmethod
-    def get_contours(img):
+    def get_contours(img: 'np.ndarray') -> 'np.ndarray':
 
         binary_img = cv.Canny(img, 50, 200)  # binary image.
         # get contours.
@@ -256,7 +182,7 @@ class FilterBase(object):
 class GifFilter(FilterBase, AbstractFilter, ):
     """ GifVerify filter. """
 
-    def char_filter(self, verify, char: Image.Image, *args, **kwargs):
+    def char_filter(self, verify: object, char: 'Image.Image', *args, **kwargs) -> 'Image.Image':
         """
         It will be called after generating the character picture.
         Cut off some pixel block of char,deform the char picture,
@@ -271,24 +197,35 @@ class GifFilter(FilterBase, AbstractFilter, ):
 
         return Image.fromarray(np.uint8(char))
 
-    def back_filter(self, verify, back: Image.Image, *args, **kwargs):
+    def back_filter(self, verify: object, back: 'Image.Image', *args, **kwargs) -> 'Image.Image':
         """
         It will be called after generating the background layer.
         Add some noise and lines to background.
         """
-        return self.add_noise(img=back, *args, **kwargs)
 
-    def frame_filter(self, verify, frame: Image.Image = None, line_iter=None, *args, **kwargs):
+        back: np.ndarray = np.array(back)
+
+        back = self.add_noise(img=back, *args, **kwargs)
+
+
+        return Image.fromarray(np.uint8(back))
+
+    def frame_filter(self, verify: object, *args, **kwargs) -> 'Image.Image':
         """  """
-        frame = frame or verify.frame
-        line_iter = line_iter or verify.line_iter
-        verify.frame = self.add_lines(img=frame, line_iter=line_iter)
+        frame = verify.frame
+        line_iter = verify.line_iter
+
+        frame: np.ndarray = np.array(frame)   # transform to np.ndarray.
+
+        self.add_lines(img=frame, line_iter=line_iter)
+
+        return Image.fromarray(np.uint8(frame))
 
 
 class PngFilter(FilterBase, AbstractFilter):
     """ PngVerify filter. """
 
-    def char_filter(self, verify, char: Image.Image, *args, **kwargs):
+    def char_filter(self, verify: object, char: 'Image.Image', *args, **kwargs) -> 'Image.Image':
         """
         It will be called after generating the character picture.
         Deform the char picture, add some noise, cut off full pixel.
@@ -301,14 +238,19 @@ class PngFilter(FilterBase, AbstractFilter):
 
         return Image.fromarray(np.uint8(char))
 
-    def back_filter(self, verify, back: Image.Image, *args, **kwargs):
+    def back_filter(self, verify: object, back: 'Image.Image', *args, **kwargs) -> 'Image.Image':
         """ Add some lines for background. """
         return back
 
-    def frame_filter(self, verify, frame: Image.Image = None, *args, **kwargs):
+    def frame_filter(self, verify: object, *args, **kwargs) -> 'Image.Image':
         """ """
-        frame = verify.frame or frame
+        frame = verify.frame
+        line_iter = verify.line_iter
+
         frame: np.ndarray = np.array(frame)
+
         frame = self.add_circle(frame)
         frame = self.add_noise(frame)
-        verify.frame = Image.fromarray(np.uint8(frame))
+        frame = self.add_lines(frame, line_iter)
+
+        return Image.fromarray(np.uint8(frame))

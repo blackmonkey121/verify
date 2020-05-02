@@ -11,30 +11,18 @@ from threading import Lock
 lock = Lock()
 
 
-@contextlib.contextmanager   # register context manager.
-def my_lock(**kwargs):
-    lock.acquire()
-    try:
-        yield lock
-    except Exception as exc:
-        """deal with exception"""
-    finally:
-        lock.release()
-        return
-
-
 class AbstractCache(metaclass=ABCMeta):
 
     @abstractmethod
-    def get(self, k, v):
+    def get(self, k, v) -> object:
         """  """
 
     @abstractmethod
-    def set(self, k, v):
+    def set(self, k, v) -> None:
         """  """
 
     @abstractmethod
-    def _clear(self):
+    def _clear(self) -> None:
         """  """
 
 
@@ -42,9 +30,8 @@ class Cache(object):
     """ This is a thread-safe cache instance. """
     __cur = lambda self: int(time.time())
 
-    def __init__(self, contain=1024, expiration=60 * 60 * 24, *args, **kwargs):
+    def __init__(self, contain: int = 1024, expiration: int = 60 * 60 * 24, *args, **kwargs) -> None:
         """
-
         :param contain: The max number of cache storage elements
         :param expiration: elements time out
         """
@@ -52,44 +39,46 @@ class Cache(object):
         self.contain = contain
         self.expiration = expiration
 
-        self._cache = {}
-        self._visit_records = OrderedDict()  # record visit time
-        self._expire_records = OrderedDict()  # record expire time
+        self._cache: dict = {}
+        self._visit_records: OrderedDict = OrderedDict()  # record visit time
+        self._expire_records: OrderedDict = OrderedDict()  # record expire time
 
-    def __setitem__(self, k, v):
+    def __setitem__(self, k, v) -> None:
 
         current = self.__cur()
         self.__delete__(k)
-        with my_lock():
+        # add lock ensure thread safety.
+        with lock:
             self._cache[k] = v
         self._expire_records[k] = current + self.expiration
         self._visit_records[k] = current
 
         self._clear()
 
-    def __getitem__(self, k):
+    def __getitem__(self, k) -> object:
 
         current = self.__cur()
         del self._visit_records[k]
         self._visit_records[k] = current
         self._clear()
-        with my_lock():
+
+        with lock:
             ret = self._cache[k]
 
         return ret
 
-    def __contains__(self, k):
+    def __contains__(self, k) -> bool:
 
         self._clear()
         return k in self._cache
 
-    def __delete__(self, k):
+    def __delete__(self, k) -> None:
         if k in self._cache:
             del self._cache[k]
             del self._expire_records[k]
             del self._visit_records[k]
 
-    def _clear(self):
+    def _clear(self) -> None:
         """ achieve _clear method """
         if self.expiration is None:
             return None
@@ -107,7 +96,7 @@ class Cache(object):
                 self.__delete__(k)
                 break
 
-    def get(self, k, v=None):
+    def get(self, k, v=None) -> object:
         """ achieve get method """
         try:
             ret = self.__getitem__(k)
@@ -115,11 +104,11 @@ class Cache(object):
             return v
         return ret
 
-    def set(self, k, v):
+    def set(self, k, v) -> None:
         """ achieve set method """
         self.__setitem__(k, v)
 
-    def clear(self):
+    def clear(self) -> None:
         self._cache.clear()
         self._visit_records.clear()
         self._expire_records.clear()

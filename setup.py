@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='verify-python',
-      version='0.0.1',
+      version='0.0.2',
       description='An elegant verification code generator.',
       author='BlackMonkey',
       author_email='3213322480@qq.com',

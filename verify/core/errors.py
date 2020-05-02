@@ -14,7 +14,7 @@ class ConfigNotExist(Error):
         self.key = key
 
     def __str__(self):
-        return "(The `%s` attribute was not found in the Config instance.\n" \
+        return "(The `%s` attribute was not found in the `Config` instance.\n" \
                "Lowercase variables are not collected by config.)" % self.key
 
 
@@ -101,3 +101,11 @@ class StringError(Error):
 
     def __str__(self):
         return '(`%s` is must be string or int , is not `%s`)' % (self.string, type(self.string))
+
+
+class CleanParaError(Error):
+    def __init__(self, func):
+        self.func = func
+
+    def __str__(self):
+        return "(The `%s` method does not accept any parameters)" % self.func

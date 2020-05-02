@@ -8,7 +8,7 @@ import os
 from io import BytesIO
 import random
 from PIL.Image import Image
-# from pymysql import connect
+
 
 from ..config import config
 from ..core.errors import StoragePathError, StoragePermissionError
@@ -17,7 +17,7 @@ from ..core.errors import StoragePathError, StoragePermissionError
 class AbstractStorage(metaclass=ABCMeta):
 
     @abstractmethod
-    def bytes_instance(self, instance: (list, Image)) -> bytes:
+    def bytes_instance(self, instance: list) -> 'BytesIO':
         """ bytes format instance """
 
     @abstractmethod
@@ -35,7 +35,7 @@ class AbstractStorage(metaclass=ABCMeta):
 class StorageCommonMixin(object):
     """ Include some common methods and rely method. """
 
-    def __init__(self, instance: (list, Image), string: str, *args, **kwargs) -> None:
+    def __init__(self, instance: list, string: str, *args, **kwargs) -> None:
         """
         Get verify object, transform to binary object.
         :param instance: verify object
@@ -117,7 +117,7 @@ class PngStorage(StorageCommonMixin, AbstractStorage):
     :return BytesIO object include verify format bytes
     """
 
-    def bytes_instance(self, instance: Image) -> BytesIO:
+    def bytes_instance(self, instance: 'Image') -> BytesIO:
 
         temp = BytesIO()
 

@@ -10,63 +10,63 @@ from abc import ABCMeta, abstractmethod
 from .errors import SecretKeyError, SafeEngineError, StringError
 from .verify import StringMixin
 from ..config import config
-from .cache import cache
+from .cache import cache, Cache
 import itsdangerous
 
 
 class SafeEngine(metaclass=ABCMeta):
 
     @abstractmethod
-    def encrypt(self, info: str) -> bytes:
+    def encrypt(self, info: str) -> str:
         """
-        Encrypt the plain text. `str` -> `bytes`.
+        Encrypt the plain text. `str` -> `str`.
         :param info: will encrypt str
         :return:Encrypted secret
         """
 
     @abstractmethod
-    def decrypt(self, info_encrypted: bytes) -> str:
+    def decrypt(self, info_encrypted: str) -> str:
         """
-        Decrypt the encrypted data，`bytes` -> `str`
+        Decrypt the encrypted data，`str` -> `str`
         :param info_encrypted:encrypted string.
         :return:decrypted string.
         """
 
     @abstractmethod
-    def get_key(self):
+    def get_key(self) -> dict:
         """ get key """
 
 
 class AbstractSafe(metaclass=ABCMeta):
 
     @abstractmethod
-    def coding(self, string=None, method='RSA', verify_type='gif'):
+    def coding(self, string: str = None, method: str = 'RSA', verify_type: str = 'gif') -> str:
         """
         After RSA encryption of str, json serialize the dictionary src to convert the serialized json string to
         base64 encoding
         """
 
     @abstractmethod
-    def parse(self, obj):
+    def parse(self, obj: str) -> dict:
         """ Disassemble the obj object and get the decrypted request dictionary """
 
     @abstractmethod
-    def update_key(self, method, *args, **kwargs):
+    def update_key(self, method: str, *args, **kwargs) -> None:
         """ Update key ."""
 
     @abstractmethod
-    def tell_key(self, method):
+    def tell_key(self, method: str) -> str:
         """ Get key ."""
 
     @abstractmethod
-    def create_string(self):
+    def create_string(self) -> str:
         """ create a random string. """
 
 
 class RsaEngine(SafeEngine):
     """ RSA encryption and decryption """
 
-    def __init__(self, number, pub_path=None, priv_path=None, cache=cache):
+    def __init__(self, number: int, pub_path: str = None, priv_path: str = None, cache: 'Cache' = cache) -> None:
         # def __init__(self, number, pub_path='public_key.pem', priv_path='private_key.pem'):
         """
 
@@ -102,7 +102,7 @@ class RsaEngine(SafeEngine):
             self.pri = pri.read()
             pri.close()
 
-    def update_key(self, number):
+    def update_key(self, number: int) -> None:
         """ Update or Create key """
         pub_key, pri_key = rsa.newkeys(number)
 
@@ -118,7 +118,7 @@ class RsaEngine(SafeEngine):
         self.cache.set('pri_key', self.pri)
         self.cache.set('pub_key', self.pub)
 
-    def encrypt(self, info: str) -> bytes:
+    def encrypt(self, info: str) -> str:
         """
         encrypt information
         :param info: the original string information to be encrypted
@@ -156,36 +156,36 @@ class RsaEngine(SafeEngine):
         info = msg.decode('ISO-8859-1')  # decode
         return info
 
-    def get_key(self):
+    def get_key(self) -> dict:
         return {'pub': self.pub, 'pri': self.pri}
 
 
 class FastEngine(SafeEngine):
     """ Example based on improved AES encryption algorithm """
 
-    def __init__(self, timeout):
+    def __init__(self, timeout: int) -> None:
         self.secret_key = config.SECRET_KEY
         self.timeout = timeout
         self.fast_instance = itsdangerous.TimedJSONWebSignatureSerializer(secret_key=self.secret_key,
                                                                           expires_in=self.timeout)
 
-    def encrypt(self, info: str) -> bytes:
+    def encrypt(self, info: str) -> str:
         ret = {'str': info}
         res = self.fast_instance.dumps(ret)
         token = res.decode('utf8')  # code method.
         return token
 
-    def decrypt(self, info_encrypted: bytes) -> str:
+    def decrypt(self, info_encrypted: str) -> str:
         res = self.fast_instance.loads(info_encrypted)
         return res['str']
 
-    def get_key(self):
-        return self.secret_key
+    def get_key(self) -> dict:
+        return {'fast': self.secret_key}
 
 
 class Safe(StringMixin, AbstractSafe):
 
-    def __init__(self, number=512, cache=cache):
+    def __init__(self, number: int=512, cache: 'Cache'=cache) -> None:
         """
         Entrance to the security module.
         :param number: RSA key length
@@ -197,16 +197,16 @@ class Safe(StringMixin, AbstractSafe):
         self.cache = cache
 
     @staticmethod
-    def _to_safe_string(obj):
+    def _to_safe_string(obj: str) -> str:
         obj = base64.urlsafe_b64encode(obj.encode("ISO-8859-1"))  # bytes
         return obj.decode("ISO-8859-1")  # str
 
     @staticmethod
-    def _to_safe_bytes(obj):
+    def _to_safe_bytes(obj: str) -> bytes:
         obj = obj.encode('ISO-8859-1')  # str
         return base64.urlsafe_b64decode(obj).decode("ISO-8859-1")  # byte
 
-    def coding(self, string=None, method='RSA', verify_type='gif'):
+    def coding(self, string: str = None, method: str = 'RSA', verify_type: str = 'gif') -> str:
         """
         After RSA encryption of str, json serialize the dictionary src to convert the serialized json
         string to base64 encoding
@@ -232,7 +232,7 @@ class Safe(StringMixin, AbstractSafe):
         })
         return self._to_safe_string(json.dumps(src))
 
-    def parse(self, obj):
+    def parse(self, obj: str) -> dict:
         """ Disassemble the obj object to get the decrypted request dictionary. """
         data = self._to_safe_bytes(obj)  # decode base64
 
@@ -246,8 +246,8 @@ class Safe(StringMixin, AbstractSafe):
 
         return data
 
-    def update_key(self, method, *args, **kwargs):
-        """ """
+    def update_key(self, method: str, *args, **kwargs) -> None:
+        """ Update the secret key. """
         if method.lower() == 'rsa':
 
             safe_instance = self._rsa
@@ -263,8 +263,7 @@ class Safe(StringMixin, AbstractSafe):
         else:
             raise SafeEngineError(method)
 
-    def tell_key(self, method):
-        """ """
+    def tell_key(self, method: str) -> str:
 
         safe_instance = getattr(self, '_%s' % method.lower(), None)
         if safe_instance:

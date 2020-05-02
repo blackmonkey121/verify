@@ -4,27 +4,28 @@ __author__ = "monkey"
 
 from abc import ABCMeta, abstractmethod
 from math import cos, sin, pi
-
 import random
+from typing import Iterable
+
 from ..config import config
 
 
 class AbstractStyle(metaclass=ABCMeta):
 
     @abstractmethod
-    def get_lines(self, *args, **kwargs):
+    def get_lines(self, *args, **kwargs) -> 'Iterable':
         """ lines styles """
 
     @abstractmethod
-    def get_positions(self, *args, **kwargs):
+    def get_positions(self, *args, **kwargs) -> list:
         """ positions styles """
 
     @abstractmethod
-    def get_angles(self, *args, **kwargs):
+    def get_angles(self, *args, **kwargs) -> list:
         """ angles styles """
 
     @abstractmethod
-    def frame_style(self, *args, **kwargs):
+    def frame_style(self, *args, **kwargs) -> 'Iterable':
         """ frame styles"""
 
 
@@ -32,7 +33,7 @@ class StyleCommonMixin(object):
     """ Some common method. """
 
     @staticmethod
-    def get_frame_position():
+    def get_frame_position() -> 'Iterable':
         """ Generate initial data for the coordinates of a frame of characters in the background. """
 
         x, y = config.VERIFY_SIZE
@@ -46,14 +47,14 @@ class StyleCommonMixin(object):
             yield site
 
     @staticmethod
-    def get_frame_angle():
+    def get_frame_angle() -> 'Iterable':
         """ Initial data of character rotation angle on one frame. """
-        s_angle = config.START_ANGLE
+        s_angle = config.ANGLE_INTERVAL
         for angle in range(config.VERIFY_CODE_NUMBER):
             yield random.randint(-s_angle, s_angle)
 
     @staticmethod
-    def get_first_line():
+    def get_first_line() -> 'Iterable':
         """ One frame style of data. """
 
         x, y = config.VERIFY_SIZE
@@ -73,7 +74,7 @@ class StyleCommonMixin(object):
             yield p1, p2, p3
 
     @staticmethod
-    def get_next_line(line_iter):
+    def get_next_line(line_iter: 'Iterable') -> 'Iterable':
         """ get next line style data. """
 
         one_step = [
@@ -91,7 +92,7 @@ class StyleCommonMixin(object):
             p3 = random.choice(one_step)(*p3)
             yield p1, p2, p3
 
-    def get_lines(self):
+    def get_lines(self, *args, **kwargs) -> 'Iterable':
         """ get lines style data. """
         current_line = self.get_first_line()
         for line in range(config.FRAME_NUMBER):
@@ -103,7 +104,7 @@ class StyleCommonMixin(object):
 class GifStyle(StyleCommonMixin, AbstractStyle):
     """ A style class for Gif verify. """
 
-    def get_positions(self):
+    def get_positions(self, *args, **kwargs) -> list:
         """ Position data of all frames and characters in the background in one GIF. """
         positions = []
 
@@ -124,12 +125,12 @@ class GifStyle(StyleCommonMixin, AbstractStyle):
 
         return positions
 
-    def get_angles(self):
+    def get_angles(self, *args, **kwargs) -> list:
         """ One frame angles data. """
         ret = []
         N = config.FRAME_NUMBER // 2
         for index in range(config.VERIFY_CODE_NUMBER):
-            angle = random.randint(0, config.START_ANGLE)
+            angle = random.randint(0, config.ANGLE_INTERVAL)
             sep = config.ANGLE_INTERVAL // N
 
             tmp = [angle + i * sep for i in range(N)]
@@ -137,7 +138,7 @@ class GifStyle(StyleCommonMixin, AbstractStyle):
             ret.append(tmp + tmp[::-1])
         return ret
 
-    def frame_style(self):
+    def frame_style(self, *args, **kwargs) -> Iterable:
         """ frame style include lines、angles、positions and ... """
         char_positions = self.get_positions()
         char_angles = self.get_angles()
@@ -165,22 +166,28 @@ class GifStyle(StyleCommonMixin, AbstractStyle):
 class PngStyle(StyleCommonMixin, AbstractStyle):
     """ A style class for Png verify.It's not recommend. """
 
-    def get_positions(self):
+    def get_positions(self, *args, **kwargs) -> 'Iterable':
         """ Get character position on the frame. """
-        return self.get_frame_position()
 
-    def get_angles(self):
+        position = self.get_frame_position()
+
+        return position
+
+    def get_angles(self, *args, **kwargs) -> 'Iterable':
         """ Get character spin angle on the frame. """
-        return self.get_frame_angle()
 
-    def get_lines(self):
+        angles = self.get_frame_angle()
+
+        return angles
+
+    def get_lines(self, *args, **kwargs) -> Iterable:
         """
         Get a frame Noise-Line arguments.
         :return: A tuple containing three pixel.
         """
         return self.get_first_line()
 
-    def frame_style(self):
+    def frame_style(self, *args, **kwargs) -> Iterable:
         """
         Package style arguments for the frame.
         :return: A dict that containing all style arguments

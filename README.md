@@ -4,7 +4,7 @@
     <img src="https://github.com/blackmonkey121/verify/blob/master/image/verify_logo.png" alt="Verify-Logo">
 </div>
 
-# Verify ![](https://img.shields.io/badge/GPL-3.0-green)  ![](https://img.shields.io/badge/version-0.0.1-informational)  ![](https://img.shields.io/badge/python-3.x-blueviolet)
+# Verify ![](https://img.shields.io/badge/GPL-3.0-green)  ![](https://img.shields.io/badge/version-0.0.2-informational)  ![](https://img.shields.io/badge/python-3.x-blueviolet)
 An elegant verification code generation framework.
 
 ## Contents
@@ -14,7 +14,7 @@ An elegant verification code generation framework.
 - [No.3 Usage](https://github.com/blackmonkey121/verify#usage)
 - [No.4 Example](https://github.com/blackmonkey121/verify#example)
 - [No.5 Expand](https://github.com/blackmonkey121/verify#expand)
-- [No.6 Docx](https://github.com/blackmonkey121/verify#docx)
+- [No.6 Configuration table](https://github.com/blackmonkey121/verify#configuration-table)
 - [No.7 License](https://github.com/blackmonkey121/verify#license)
 
 
@@ -172,7 +172,7 @@ verify_url_para = s.coding('S7rE')
 url = url + verify_url_para
 
 # verify_url_para: IntcInN0clwsjMG...XCJSU0FcIiXCJ2dFwiOiBcImdpZlwifSI=
----------------------------------------------------
+
 rander(<img src="https://path/verify/verify_url_para">)
 render(<img src="https://xxx/verify/IntcInN0clwsjMG...XCJSU0FcIiXCJ2dFwiOiBcImdpZlwifSI=" alt="verify">)
 ```
@@ -210,17 +210,15 @@ return verify_binary   # Verification code in binary format.
 
 
 
-## Expand
 
 
+**[More examples]()**
 
-### Verify
+## Expand & Overwrite
 
 > Provides support for two types of verification codes, namely **`GifVerify`** and **`PngVerify`**,
 >
 > When instantiating them, you can specify`Builder`、`config`、 `Filter`、`Storage`、`Style`.
-
-
 
 - **Builder**
   - **_Create_char_**  create char image.
@@ -240,11 +238,164 @@ return verify_binary   # Verification code in binary format.
   - **_get_angles_**  Chareset angle informations of in the background.
   - **_frame_style_**  All style information of each layer.
 
+
+
+### Storage
+
+```python
+from verify import VerifyPng, PngStorage
+
+
+class MyStorage(PngStorage):
+
+    def show_img(self):
+
+        from PIL import Image
+
+        img = Image.open(self.instance)   # Read image from self.instance
+
+        img.show()  # show the image.
+
+
+veri = VerifyPng(storage=MyStorage)   # Instantiate VerifyPng
+
+png = veri('HQ3r')  # Return `MyStorage` instance.
+
+png.show_img()   # Call `show_img` methods.
+```
+
+
+
+### Filter
+
+```python
+from verify import VerifyPng, PngFilter
+
+
+class MyFilter(PngFilter):
+
+    def char_filter(self, verify: object, char: 'Image.Image', *args, **kwargs) -> 'Image.Image':
+        ...
+        print('Overwrite char_filter. ')
+        ...
+        return super().char_filter(verify=verify, char=char, *args, **kwargs)
+
+
+veri = VerifyPng(filter=MyFilter)
+png = veri('HQ3r')
+```
+
+
+
+### Builder
+
+```python
+from verify import VerifyPng, PngFrameBuilder
+
+
+class MyBuilder(PngFrameBuilder):
+
+    def create_background(self, back_filter, *args, **kwargs) -> 'Image.Image':
+        ...
+        print('Overwrite create_background. ')
+        ...
+        return super().create_background(back_filter=back_filter, *args, **kwargs)
+
+
+veri = VerifyPng(builder=MyBuilder)
+png = veri('HQ3r')
+```
+
+
+
+### Style
+
+```python
+from verify import VerifyPng, PngStyle
+
+
+class MyStyle(PngStyle):
+    
+    def get_angles(self, *args, **kwargs) -> 'Iterable':
+        ...
+        print('Overwrite get_angles. ')
+        ...
+        return super(MyStyle, self).get_angles()
+
+
+veri = VerifyPng(style=MyStyle)
+png = veri('HQ3r')
+```
+
+
+
+### Config
+
+**Add Hook**
+
+> Config will provide a hook that will call all methods ending in `_clean`. This can dynamically adjust the parameters, especially when the values of other parameters are not clear. You can also filter and add specific parameters.
+
+```python
+from verify import VerifyPng, Config
+
+
+class MyConfig(Config):
+
+    VERIFY_SIZE = (200, 54)   			# Write custom configuration information
+    VERIFY_CODE_NUMBER = 6					# it will be used first.
+    VERIFY_CODE_SIZE = (50, 50)
+    DEFORM_OFFSET = 1
+    DEFORM_NUMBER = 1
+
+    # Methods ending in `_clean` will be called by default.
+    def deform_clean(self):
+        self.DEFORM_NUMBER = 1 if self.DEFORM_NUMBER < 1 else self.DEFORM_NUMBER
+
+veri = VerifyPng(storage=MyStorage, config=MyConfig)
+
+png = veri()
+png.show()
+```
+
+**Add general method**
+
+> This is a special singleton mode. You can add methods to singletons anytime and anywhere through the subclass of Config.
+
+
+
 > You can inherit them and rewrite them to meet your needs. For more detailed introduction, please see the [document]().
 
 
 
-## Docx:
+## Configuration table
+
+| Configuration |Default|Meaning |
+| ------------- | ------- | ------- |
+| VERIFY_CODE_SET | NUMBERS + CHARS_BIG + CHARS_LOW <  list > |Random character set|
+|CHAR_FONT|ImageFont.truetype('Arial.ttf', 40)| Font and size                      |
+|VERIFY_CODE_NUMBER|4|Number of characters on each layer|
+|VERIFY_CODE_SIZE|(40, 40)  < pixel >|Character size|
+|BACK_COLOR|(255, 255, 255, 255)  < pixel >|Background color|
+|CHAR_COLOR|(0, 0, 0, 255)  < pixel >|Character color|
+|NULL_COLOR|(0, 0, 0, 0)  < pixel >|Null color|
+|VERIFY_SIZE|(180, 60)  < pixel >|CAPTCHA size|
+|BACK_NOISE_NUMBER|200|Number of background noise|
+|BACK_NOISE_TYPE|2  < pixel >|Size of background noise|
+|LINES_NUMBER|4|Number of interference lines|
+|CHAR_CUT_NUMBER|8|Number of character fragments|
+|CHAR_CUT_PRESENT|0.2|Size of incomplete area|
+|CIRCLE_NUMBER|6|Number of interference circle|
+|FRAME_NUMBER|30|Frame number of GIF Verify|
+|TRACK_INTERVAL|10 < pixel >|Character rotation radius|
+|ANGLE_INTERVAL|60 < ±60 >|Rotation range of characters|
+|RSA_FOLDER|RSA_KEY|RSA key save directory|
+|RSA_KEY_DIR|`verify.RSA_KEY` < builder-in path >|RSA key save path|
+|SAFE_ENGINE|'RSA'|Default encryption engine|
+|SECRET_KEY|'a-=3bb51t_x#........s4_=w^40xj#7g'|Secret key for fast encryption engine|
+|STORAGE_DIR|'Verify'|Save location of CAPTCHA|
+|DEFORM_NUMBER|2|Number of character twists|
+|DEFORM_OFFSET|6 < pixel >|The degree of character distortion|
+
 
 
 
