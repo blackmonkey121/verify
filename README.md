@@ -13,7 +13,7 @@ An elegant verification code generation framework.
 - [No.2 Installation](https://github.com/blackmonkey121/verify#installation)
 - [No.3 Usage](https://github.com/blackmonkey121/verify#usage)
 - [No.4 Example](https://github.com/blackmonkey121/verify#example)
-- [No.5 Expand](https://github.com/blackmonkey121/verify#expand--overwrite)
+- [No.5 Expand&Overwrite](https://github.com/blackmonkey121/verify#expand--overwrite)
 - [No.6 Configuration table](https://github.com/blackmonkey121/verify#configuration-table)
 - [No.7 License](https://github.com/blackmonkey121/verify#license)
 
@@ -340,8 +340,8 @@ class MyConfig(Config):
     VERIFY_SIZE = (200, 54)   			# Write custom configuration information
     VERIFY_CODE_NUMBER = 6					# it will be used first.
     VERIFY_CODE_SIZE = (50, 50)
-    DEFORM_OFFSET = 1
-    DEFORM_NUMBER = 1
+    DEFORM_OFFSET = 6
+    DEFORM_NUMBER = 2	
 
     # Methods ending in `_clean` will be called by default.
     def deform_clean(self):
@@ -350,6 +350,42 @@ class MyConfig(Config):
 veri = VerifyPng(storage=MyStorage, config=MyConfig)
 
 png = veri()
+png.show()
+```
+
+> You can pass in multiple custom classes at the same time, as long as they follow the corresponding interface.
+
+```python
+...
+veri = VerifyPng(storage=MyStorage, config=MyConfig, filter=MyFilter, builder=MyBuilder, style=MyStyle)
+
+png = veri('H7rJ')
+png.show()
+...
+```
+
+> Follow the interface without inheriting the default class. All interfaces are aggregated in `verify.abc.py`  .
+>
+> **Interface list**:
+
+```python
+from verify.abc import AbstractFilter
+
+
+class MyFilter(AbstractFilter):
+
+    def back_filter(self, verify: object, back: 'Image.Image', *args, **kwargs) -> 'Image.Image':
+        return back
+
+    def frame_filter(self, verify: object, *args, **kwargs) -> 'Image.Image':
+        return verify.frame
+
+    def char_filter(self, verify: object, char: 'Image.Image', *args, **kwargs) -> 'Image.Image':
+        return char
+
+
+veri = VerifyPng(filter=MyFilter, storage=MyStorage)
+png = veri('Ag3r')
 png.show()
 ```
 

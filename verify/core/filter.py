@@ -210,7 +210,7 @@ class GifFilter(FilterBase, AbstractFilter, ):
 
         return Image.fromarray(np.uint8(back))
 
-    def frame_filter(self, verify: object, *args, **kwargs) -> 'Image.Image':
+    def frame_filter(self, verify: 'object', *args, **kwargs) -> 'Image.Image':
         """  """
         frame = verify.frame
         line_iter = verify.line_iter

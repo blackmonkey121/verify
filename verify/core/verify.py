@@ -2,6 +2,7 @@
 # _*_ coding: utf-8 _*_
 __author__ = "monkey"
 
+from abc import abstractmethod, ABCMeta
 from typing import Iterable
 from PIL import Image
 import random
@@ -10,9 +11,9 @@ import random
 from .storage import GifStorage, PngStorage, AbstractStorage
 from ..config import Config
 from ..core.errors import ConfigError, FilterError, StyleError, StorageError, BuilderError
-from ..core.filter import GifFilter, PngFilter
-from ..core.style import GifStyle, PngStyle
-from ..core.builder import GifFrameBuilder, PngFrameBuilder
+from ..core.filter import GifFilter, PngFilter, AbstractFilter
+from ..core.style import GifStyle, PngStyle, AbstractStyle
+from ..core.builder import GifFrameBuilder, PngFrameBuilder, AbstractFrameBuilder
 from ..config import config
 
 
@@ -25,6 +26,21 @@ class StringMixin(object):
         char_list = random.choices(config.VERIFY_CODE_SET, k=config.VERIFY_CODE_NUMBER)
         string = ''.join(char_list)
         return string
+
+
+class AbstractVerify(metaclass=ABCMeta):
+
+    @abstractmethod
+    def create_string(self) -> str:
+        """ create random string. """
+
+    @abstractmethod
+    def create_frame(self, style_data: dict, *args, **kwargs) -> 'Image.Image':
+        """ create a frame layer. """
+
+    @abstractmethod
+    def create_verify(self, *args, **kwargs) -> object:
+        """ create verify return AbstractStorage instance. """
 
 
 class CommonVerify(object):
@@ -49,26 +65,26 @@ class CommonVerify(object):
             raise ConfigError(config)
 
         filter = filter or self._meta.filter
-        if issubclass(filter, self._meta.filter):
+        if issubclass(filter, AbstractFilter):
             self.filter = filter()
         else:
             raise FilterError(filter)
 
         style = style or self._meta.style
-        if issubclass(style, self._meta.style):
+        if issubclass(style, AbstractStyle):
             self.style = style()
         else:
             raise StyleError(style)
 
         storage = storage or self._meta.storage
-        if issubclass(storage, self._meta.storage):
+        if issubclass(storage, AbstractStorage):
             self.storage = storage
         else:
             raise StorageError(storage)
 
         builder = builder or self._meta.builder
 
-        if issubclass(builder, self._meta.builder):
+        if issubclass(builder, AbstractFrameBuilder):
             self.builder = builder()
         else:
             raise BuilderError(builder)
@@ -114,7 +130,7 @@ class CommonVerify(object):
         builder = None
 
 
-class VerifyGif(StringMixin, CommonVerify):
+class VerifyGif(StringMixin, CommonVerify, AbstractVerify):
     """ Gif verification interface. """
 
     def create_verify(self, *args, **kwargs) -> list:
@@ -143,7 +159,7 @@ class VerifyGif(StringMixin, CommonVerify):
         builder = GifFrameBuilder
 
 
-class VerifyPng(StringMixin, CommonVerify):
+class VerifyPng(StringMixin, CommonVerify, AbstractVerify):
     """ Png verification interface """
 
     def create_verify(self, *args, **kwargs) -> 'Image.Image':
@@ -163,4 +179,3 @@ class VerifyPng(StringMixin, CommonVerify):
         style = PngStyle
         storage = PngStorage
         builder = PngFrameBuilder
-
