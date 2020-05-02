@@ -13,7 +13,7 @@ An elegant verification code generation framework.
 - [No.2 Installation](https://github.com/blackmonkey121/verify#installation)
 - [No.3 Usage](https://github.com/blackmonkey121/verify#usage)
 - [No.4 Example](https://github.com/blackmonkey121/verify#example)
-- [No.5 Expand](https://github.com/blackmonkey121/verify#expand)
+- [No.5 Expand](https://github.com/blackmonkey121/verify#expand--overwrite)
 - [No.6 Configuration table](https://github.com/blackmonkey121/verify#configuration-table)
 - [No.7 License](https://github.com/blackmonkey121/verify#license)
 
@@ -79,7 +79,7 @@ from verify import VerifyPng
 
 png_instance = VerifyPng()
 veri = instance('J7Wd')
-veri.get_binary()   # get
+veri.get_binary()
 ```
 
 
@@ -208,10 +208,6 @@ verify_binary = get_verify_binary(request_data)
 return verify_binary   # Verification code in binary format.
 ```
 
-
-
-
-
 **[More examples]()**
 
 ## Expand & Overwrite
@@ -239,6 +235,8 @@ return verify_binary   # Verification code in binary format.
   - **_frame_style_**  All style information of each layer.
 
 
+
+> You can inherit them and rewrite them to meet your needs. For more detailed introduction, please see the [document]().
 
 ### Storage
 
@@ -331,8 +329,6 @@ png = veri('HQ3r')
 
 ### Config
 
-**Add Hook**
-
 > Config will provide a hook that will call all methods ending in `_clean`. This can dynamically adjust the parameters, especially when the values of other parameters are not clear. You can also filter and add specific parameters.
 
 ```python
@@ -356,14 +352,6 @@ veri = VerifyPng(storage=MyStorage, config=MyConfig)
 png = veri()
 png.show()
 ```
-
-**Add general method**
-
-> This is a special singleton mode. You can add methods to singletons anytime and anywhere through the subclass of Config.
-
-
-
-> You can inherit them and rewrite them to meet your needs. For more detailed introduction, please see the [document]().
 
 
 
