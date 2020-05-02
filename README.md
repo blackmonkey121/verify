@@ -366,7 +366,7 @@ png.show()
 
 > Follow the interface without inheriting the default class. All interfaces are aggregated in `verify.abc.py`  .
 >
-> **Interface list**:
+> **Interface list**: `AbstractVerify`,` AbstractFilter`,` AbstractStyle`, `AbstractStorage`,` AbstractFrameBuilder`
 
 ```python
 from verify.abc import AbstractFilter
