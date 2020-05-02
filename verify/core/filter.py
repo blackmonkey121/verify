@@ -207,7 +207,6 @@ class GifFilter(FilterBase, AbstractFilter, ):
 
         back = self.add_noise(img=back, *args, **kwargs)
 
-
         return Image.fromarray(np.uint8(back))
 
     def frame_filter(self, verify: 'object', *args, **kwargs) -> 'Image.Image':

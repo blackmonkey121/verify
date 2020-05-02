@@ -24,9 +24,9 @@ setup(name='verify-python',
 
       python_requires='>=3.3',
       install_requires=[
-          "itsdangerous",
-          "numpy",
-          "opencv-python",
-          "Pillow",
-          "rsa", ]
+          "itsdangerous>=1.1.0",
+          "numpy>=1.11.3",
+          "opencv-python>=3.4",
+          "Pillow>=7.0",
+          "rsa>=4.0", ]
       )

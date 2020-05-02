@@ -51,7 +51,7 @@ pip install git+https//github.com/blackmonkey121/verify.git
 **Download**  👉  [Click me **Download** verify-python](https://github.com/blackmonkey121/verify/archive/master.zip)
 
 ```shell
-python setup.py instal   # 在 verify-python 根目录下执行
+python setup.py instal   #  verify-python root directory.
 ```
 
 
