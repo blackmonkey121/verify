@@ -51,7 +51,7 @@ pip install git+https//github.com/blackmonkey121/verify.git
 **Download**  👉  [Click me **Download** verify-python](https://github.com/blackmonkey121/verify/archive/master.zip)
 
 ```shell
-python setup.py instal   # 在 verify-python 根目录下执行
+python setup.py instal   #  verify-python root directory.
 ```
 
 
@@ -352,6 +352,30 @@ veri = VerifyPng(storage=MyStorage, config=MyConfig)
 png = veri()
 png.show()
 ```
+
+> Some adjustments have been made to the singleton object, allowing arbitrary methods to be implemented in the custom class, and these methods will be added to the configuration object dynamically, and you can call them anywhere.
+
+```python
+class MyConfig(Config):
+    VERIFY_SIZE = (200, 54)
+
+    # Methods ending in `_clean` will be called by default.
+    def para_clean(self):
+        self.DEFORM_NUMBER = 1 if self.DEFORM_NUMBER < 1 else self.DEFORM_NUMBER
+        self.check_circle_number()
+        self.check_deform_number()
+
+    def check_circle_number(self, default=4):
+        self.CIRCLE_NUMBER = self.CIRCLE_NUMBER if 2 < self.CIRCLE_NUMBER < 6 else default
+
+    def check_deform_number(self, default=2):
+        self.DEFORM_NUMBER = self.DEFORM_NUMBER if 0 < self.DEFORM_NUMBER <= 2 else default
+
+```
+
+
+
+### end
 
 > You can pass in multiple custom classes at the same time, as long as they follow the corresponding interface.
 
