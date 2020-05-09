@@ -24,6 +24,7 @@ __author__ = "Monkey"
 #       3 No need to create references for instances,the looks weird, but it ’s okay if you quote it.
 
 import os
+import types
 from PIL import ImageFont
 
 from ..core.errors import ConfigNotExist, ConfigFileNotFoundError, StringError, CleanParaError
@@ -31,6 +32,7 @@ from ..core.errors import ConfigNotExist, ConfigFileNotFoundError, StringError, 
 
 class Config(object):
     """ Global Config Class """
+    n = 0
     _instance = None  # unique instance~
 
     NUMBERS: list = [str(i) for i in range(10)]  # Numbers
@@ -52,13 +54,13 @@ class Config(object):
     CHAR_COLOR: tuple = (0, 0, 0, 255)
     NULL_COLOR: tuple = (0, 0, 0, 0)
 
-    VERIFY_SIZE: tuple = (180, 60)  # CAPTCHA size
+    VERIFY_SIZE: tuple = (140, 50)  # CAPTCHA size
 
     BACK_NOISE_NUMBER: int = 200  # Number of background noise
 
     BACK_NOISE_TYPE: int = 2  # Size of background noise
 
-    LINES_NUMBER: int = 4  # Number of interference lines
+    LINES_NUMBER: int = 6  # Number of interference lines
 
     CHAR_CUT_NUMBER: int = 8  # Number of character fragments
 
@@ -93,19 +95,29 @@ class Config(object):
         """
         if not cls._instance:
             cls._instance = super().__new__(cls)   # Get instance object
-        else:
-            # Update local capitalized variables as global `config` attributes.
-            # and make class method to instance method.
+
+            for k, v in cls.__dict__.items():
+                if k.isupper():
+                    setattr(cls._instance, k, v)
+
+        if cls is not Config:
+            # Update custom class capitalized variables as global `config` attributes.
+            # and make class method like instance method.
+
+            _clean_method_list = []
+
             for k, v in cls.__dict__.items():
                 if k.isupper():
                     setattr(cls._instance, k, v)
                 if callable(v):
-                    if k.endswith('_clean'):
-                        try:
-                            cls._instance.__asself__(v)()
-                        except TypeError:
-                            raise CleanParaError(k)
-                    setattr(cls._instance, k, cls._instance.__asself__(v))
+
+                    setattr(cls._instance, k, types.MethodType(v, cls._instance))
+                if k.endswith('_clean'):
+                    _clean_method_list.append(getattr(cls._instance, k))
+
+            # Call the method ending with "end" in the custom class. eg:frame_clean, char_clean.
+
+            [_clean() for _clean in _clean_method_list]
 
         return cls._instance   # return this unique object.
 
@@ -143,11 +155,6 @@ class Config(object):
         except ModuleNotFoundError:
             if conf_flag:    # If user give the filename, Not found will raise ..
                 raise ConfigFileNotFoundError(fname=fname)
-
-    def __asself__(self, func=None):
-        def self_func(*args, **kwargs):
-            func(self.__class__._instance, *args, **kwargs)
-        return self_func
 
 
 config = Config()

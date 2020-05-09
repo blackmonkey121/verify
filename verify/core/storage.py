@@ -28,6 +28,10 @@ class AbstractStorage(metaclass=ABCMeta):
     def get_binary(self) -> bytes:
         """ Get the binary type verify. """
 
+    @abstractmethod
+    def show(self):
+        """ Show the Verify picture object."""
+
     class _meta:  # FIXME check the meta subclass attribute before running.
         extend_name = None
 
@@ -90,6 +94,13 @@ class StorageCommonMixin(object):
 
         img_bytes = self.instance.read()
         return img_bytes  # binary object of verify.
+
+    def show(self):
+        """ Show the result. """
+
+        from PIL import Image
+        img = Image.open(self.instance)  # Read image from self.instance
+        img.show()  # show the image.
 
 
 class GifStorage(StorageCommonMixin, AbstractStorage):

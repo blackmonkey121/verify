@@ -148,16 +148,18 @@ class FilterBase(object):
     @staticmethod
     def add_circle(img: 'np.ndarray') -> 'np.ndarray':
         """ Add background circle lines to enhance the difficulty of machine recognition."""
-        x, y, a = img.shape
+        num = config.CIRCLE_NUMBER
+        if num:
 
-        sep = y // config.CIRCLE_NUMBER
+            x, y, a = img.shape
 
-        center = lambda start: (random.randint(start, start + sep), random.randint(1, x))  # Circle center site
-        r = lambda : random.randint(2, 12)
+            sep = y // num
+            center = lambda start: (random.randint(start, start + sep), random.randint(1, x))  # Circle center site
+            r = lambda : random.randint(2, 12)
 
-        for index in range(config.CIRCLE_NUMBER):
-            start = index * sep
-            cv.circle(img, center(start), r(), config.CHAR_COLOR)
+            for index in range(config.CIRCLE_NUMBER):
+                start = index * sep
+                cv.circle(img, center(start), r(), config.CHAR_COLOR)
 
         return img
 
@@ -216,7 +218,8 @@ class GifFilter(FilterBase, AbstractFilter, ):
 
         frame: np.ndarray = np.array(frame)   # transform to np.ndarray.
 
-        self.add_lines(img=frame, line_iter=line_iter)
+        frame = self.add_lines(img=frame, line_iter=line_iter)
+        frame = self.add_circle(frame)
 
         return Image.fromarray(np.uint8(frame))
 
