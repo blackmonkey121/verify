@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 __author__ = "Monkey"
 # —————————————————— storage
-from verify.config import config
-from verify.core.storage import GifStorage
-
-from PIL import Image
 
 # config.STORAGE_DIR = 'result'   # define save dir
 #
@@ -38,12 +34,3 @@ from PIL import Image
 #
 # # —————————————————————————— verify
 #
-#
-# from verify.core.verify import VerifyGif, VerifyPng
-#
-# gif = VerifyGif()
-# a = gif('77kn')
-# a.save_file()
-# png = VerifyPng()
-# b = png()
-# b.save_file()
