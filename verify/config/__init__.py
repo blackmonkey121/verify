@@ -32,7 +32,7 @@ from ..core.errors import ConfigNotExist, ConfigFileNotFoundError, StringError, 
 
 class Config(object):
     """ Global Config Class """
-    n = 0
+
     _instance = None  # unique instance~
 
     NUMBERS: list = [str(i) for i in range(10)]  # Numbers
@@ -109,9 +109,10 @@ class Config(object):
             for k, v in cls.__dict__.items():
                 if k.isupper():
                     setattr(cls._instance, k, v)
-                if callable(v):
 
+                if callable(v):
                     setattr(cls._instance, k, types.MethodType(v, cls._instance))
+
                 if k.endswith('_clean'):
                     _clean_method_list.append(getattr(cls._instance, k))
 

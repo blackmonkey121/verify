@@ -137,6 +137,27 @@ config.VERIFY_SIZE: tuple = (42, 42)
 config.LINES_NUMBER: int = 5
 ```
 
+> **Tips** Automatically call your "_clean" ending method. Special treatment has been made to the single example. You can also use it as a normal class, and add methods to the config object at any time.
+
+```python
+from verify import Config
+
+class MyConfig(Config):
+
+    def size_clean(self):
+        """ Will be called immediately upon instantiation . """
+        self.bar()
+
+        x, y = self.VERIFY_SIZE
+        x = x if x <= 180 else 180
+        y = y if y <= 50 else 50
+        self.VERIFY_SIZE = (x, y)
+
+    def bar(self):
+        """ The method will bound the signal object config ."""
+        print('hello config')
+```
+
 
 
 ### Cache

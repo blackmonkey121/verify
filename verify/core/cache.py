@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 __author__ = "Monkey"
 
-import contextlib
 import time
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
