@@ -116,8 +116,7 @@ class Config(object):
                 if k.endswith('_clean'):
                     _clean_method_list.append(getattr(cls._instance, k))
 
-            # Call the method ending with "end" in the custom class. eg:frame_clean, char_clean.
-
+            # Call the method ending with "_clean" in the custom class. eg:frame_clean, char_clean.
             [_clean() for _clean in _clean_method_list]
 
         return cls._instance   # return this unique object.
