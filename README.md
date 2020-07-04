@@ -51,7 +51,7 @@ pip install git+https//github.com/blackmonkey121/verify.git
 **Download**  👉  [Click me **Download** verify-python](https://github.com/blackmonkey121/verify/archive/master.zip)
 
 ```shell
-python setup.py instal   #  verify-python root directory.
+python setup.py install   #  verify-python root directory.
 ```
 
 
@@ -64,8 +64,8 @@ python setup.py instal   #  verify-python root directory.
 ```python
 from verify import VerifyGif
 
-gif = VerifyGif()    # Get the instance of VerifyGif.
-veri = gif('A48K')   # You can specify it yourself or generate it randomly.
+gif_instance = VerifyGif()    # Get the instance of VerifyGif.
+veri = gif_instance('A48K')   # You can specify it yourself or generate it randomly.
 veri.save_file()   # Save the verify code to `.Verify/verifyxxx.gif`
 veri.get_binary()    # Get the verify code format binary.
 ```
@@ -78,7 +78,7 @@ veri.get_binary()    # Get the verify code format binary.
 from verify import VerifyPng
 
 png_instance = VerifyPng()
-veri = instance('J7Wd')
+veri = png_instance('J7Wd')
 veri.get_binary()
 ```
 
@@ -194,7 +194,7 @@ url = url + verify_url_para
 
 # verify_url_para: IntcInN0clwsjMG...XCJSU0FcIiXCJ2dFwiOiBcImdpZlwifSI=
 
-rander(<img src="https://path/verify/verify_url_para">)
+render(<img src="https://path/verify/verify_url_para">)
 render(<img src="https://xxx/verify/IntcInN0clwsjMG...XCJSU0FcIiXCJ2dFwiOiBcImdpZlwifSI=" alt="verify">)
 ```
 
